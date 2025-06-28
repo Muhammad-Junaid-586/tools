@@ -4,6 +4,23 @@ import React, { useState } from "react";
 import * as XLSX from "xlsx";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setLogo,
+  setStudentsData,
+  setSchoolName,
+  setSession,
+  setClassLevel,
+  setExamType,
+  setDeclarationDate,
+  setPassingCriteria,
+  setPassingPercentage,
+  setFailedPapers,
+  setPassedPapers,
+  addSubject,
+  removeSubject,
+  setFormData,
+} from "../dataStore/dmcSlice";
 import {
   FaUpload,
   FaSchool,
@@ -17,34 +34,24 @@ import {
 } from "react-icons/fa";
 
 const Upload = ({ onDataFetched }) => {
-  // State for file uploads
-  const [logo, setLogo] = useState(null);
-  const [logoPreview, setLogoPreview] = useState("");
-  const [excel, setExcel] = useState(null);
-  const [studentsData, setStudentsData] = useState([]);
-
-  // State for school information
-  const [schoolName, setSchoolName] = useState("");
-  const [session, setSession] = useState("");
-  const [classLevel, setClassLevel] = useState("KG");
-  const [examType, setExamType] = useState("");
-  const [declarationDate, setDeclarationDate] = useState("");
-
-  // State for passing criteria
-  const [passingCriteria, setPassingCriteria] = useState("");
-  const [passingPercentage, setPassingPercentage] = useState("");
-  const [failedPapers, setFailedPapers] = useState("");
-  const [passedPapers, setPassedPapers] = useState("");
-
-  // State for subjects/papers
-  const [selectedPaper, setSelectedPaper] = useState("");
-  const [totalMarks, setTotalMarks] = useState("");
-  const [passingMarks, setPassingMarks] = useState("");
-  const [subjects, setSubjects] = useState([]);
-
-  // UI state
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const dispatch = useDispatch();
+  const dmcState = useSelector((state) => state.dmc);
   const router = useRouter();
+
+  // Local state for file uploads
+  const [logoFile, setLogoFile] = useState(null);
+  const [excelFile, setExcelFile] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // State for new subject form
+  const [newSubject, setNewSubject] = useState({
+    paper: "",
+    totalMarks: "",
+    passingMarks: "",
+  });
+
+  // Get data from Redux store
+  const { schoolInfo, passingCriteria, subjects, students } = dmcState;
 
   // Constants
   const examTypes = [
@@ -81,7 +88,6 @@ const Upload = ({ onDataFetched }) => {
     ...Array.from({ length: 12 }, (_, i) => (i + 1).toString()),
   ];
 
-  // Generate session options from 2025-2026 to 2050-2051
   const generateSessionOptions = () => {
     return Array.from({ length: 26 }, (_, i) => `${2025 + i}-${2026 + i}`);
   };
@@ -89,17 +95,19 @@ const Upload = ({ onDataFetched }) => {
   // Handle logo upload with preview
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
-    setLogo(file);
+    setLogoFile(file);
 
     const reader = new FileReader();
-    reader.onload = () => setLogoPreview(reader.result);
+    reader.onload = () => {
+      dispatch(setLogo(reader.result));
+    };
     reader.readAsDataURL(file);
   };
 
   // Handle Excel file upload and parsing
   const handleExcelChange = (e) => {
     const file = e.target.files[0];
-    setExcel(file);
+    setExcelFile(file);
 
     const reader = new FileReader();
     reader.onload = (evt) => {
@@ -107,38 +115,47 @@ const Upload = ({ onDataFetched }) => {
       const workbook = XLSX.read(data, { type: "binary" });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json(sheet);
-      setStudentsData(jsonData);
+      dispatch(setStudentsData(jsonData));
     };
     reader.readAsBinaryString(file);
   };
 
+  // Handle input changes for new subject
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewSubject((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   // Add a new subject/paper
   const handleAddSubject = () => {
-    if (
-      selectedPaper &&
-      totalMarks &&
-      !subjects.some((subj) => subj.paper === selectedPaper)
-    ) {
-      const newSubject = {
-        paper: selectedPaper,
+    const { paper, totalMarks, passingMarks } = newSubject;
+
+    if (paper && totalMarks && !subjects.some((subj) => subj.paper === paper)) {
+      const subjectToAdd = {
+        paper,
         totalMarks: parseInt(totalMarks),
         passingMarks: passingMarks
           ? parseInt(passingMarks)
-          : Math.ceil(parseInt(totalMarks) * 0.4), // Default to 40% if not provided
+          : Math.ceil(parseInt(totalMarks) * 0.4),
       };
 
-      setSubjects([...subjects, newSubject]);
-      setSelectedPaper("");
-      setTotalMarks("");
-      setPassingMarks("");
+      dispatch(addSubject(subjectToAdd));
+
+      // Clear inputs
+      setNewSubject({
+        paper: "",
+        totalMarks: "",
+        passingMarks: "",
+      });
     }
   };
 
   // Remove a subject/paper
   const handleRemoveSubject = (index) => {
-    const updatedSubjects = [...subjects];
-    updatedSubjects.splice(index, 1);
-    setSubjects(updatedSubjects);
+    dispatch(removeSubject(index));
   };
 
   // Format class level with ordinal suffix
@@ -158,12 +175,12 @@ const Upload = ({ onDataFetched }) => {
 
     // Validate required fields
     if (
-      !logo ||
-      !excel ||
-      !schoolName ||
-      !session ||
-      !classLevel ||
-      !examType ||
+      !schoolInfo.logo ||
+      students.length === 0 ||
+      !schoolInfo.schoolName ||
+      !schoolInfo.session ||
+      !schoolInfo.classLevel ||
+      !schoolInfo.examType ||
       subjects.length === 0
     ) {
       alert("Please fill all required fields and add at least one subject.");
@@ -172,29 +189,35 @@ const Upload = ({ onDataFetched }) => {
     }
 
     // Prepare student data with all additional information
-    const preparedStudents = studentsData.map((student) => ({
+    const preparedStudents = students.map((student) => ({
       ...student,
-      "School Name": schoolName,
-      Session: session,
-      "Class Level": getClassDisplayName(classLevel),
-      "Exam Type": examType,
-      "Declaration Date": declarationDate,
-      Logo: logoPreview,
-      "Passing Criteria": passingCriteria,
-      "Passing Percentage": passingPercentage,
-      "Failed Papers": failedPapers,
-      "Passed Papers": passedPapers,
+      "School Name": schoolInfo.schoolName,
+      Session: schoolInfo.session,
+      "Class Level": getClassDisplayName(schoolInfo.classLevel),
+      "Exam Type": schoolInfo.examType,
+      "Declaration Date": schoolInfo.declarationDate,
+      Logo: schoolInfo.logo,
+      "Passing Criteria": passingCriteria.criteria,
+      "Passing Percentage": passingCriteria.percentage,
+      "Failed Papers": passingCriteria.failedPapers,
+      "Passed Papers": passingCriteria.passedPapers,
       Subjects: subjects,
     }));
 
-    // Pass data to parent component
-    onDataFetched(preparedStudents);
+    // Update Redux store with final form data
+    dispatch(
+      setFormData({
+        students: preparedStudents,
+      })
+    );
+
+    // Pass data to parent component if needed
+    if (onDataFetched) {
+      onDataFetched(preparedStudents);
+    }
 
     // Navigate to DMC page
-    // router.push("/dmc");
-    localStorage.setItem("studentsData", JSON.stringify(preparedStudents));
     router.push("/dmc");
-
     setIsSubmitting(false);
   };
 
@@ -233,10 +256,10 @@ const Upload = ({ onDataFetched }) => {
                     required
                   />
                 </label>
-                {logoPreview && (
+                {schoolInfo.logo && (
                   <div className="relative w-20 h-20 border rounded-md overflow-hidden">
                     <Image
-                      src={logoPreview}
+                      src={schoolInfo.logo}
                       alt="Logo Preview"
                       fill
                       className="object-contain"
@@ -266,9 +289,9 @@ const Upload = ({ onDataFetched }) => {
                   required
                 />
               </label>
-              {excel && (
+              {excelFile && (
                 <p className="text-sm text-green-600 flex items-center">
-                  <FaFileAlt className="mr-1" /> {excel.name}
+                  <FaFileAlt className="mr-1" /> {excelFile.name}
                 </p>
               )}
             </div>
@@ -289,8 +312,8 @@ const Upload = ({ onDataFetched }) => {
                 </label>
                 <input
                   type="text"
-                  value={schoolName}
-                  onChange={(e) => setSchoolName(e.target.value)}
+                  value={schoolInfo.schoolName}
+                  onChange={(e) => dispatch(setSchoolName(e.target.value))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                   placeholder="Enter school name"
@@ -304,8 +327,8 @@ const Upload = ({ onDataFetched }) => {
                   Session <span className="text-red-500 ml-1">*</span>
                 </label>
                 <select
-                  value={session}
-                  onChange={(e) => setSession(e.target.value)}
+                  value={schoolInfo.session}
+                  onChange={(e) => dispatch(setSession(e.target.value))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 >
@@ -325,8 +348,8 @@ const Upload = ({ onDataFetched }) => {
                   Class Level <span className="text-red-500 ml-1">*</span>
                 </label>
                 <select
-                  value={classLevel}
-                  onChange={(e) => setClassLevel(e.target.value)}
+                  value={schoolInfo.classLevel}
+                  onChange={(e) => dispatch(setClassLevel(e.target.value))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 >
@@ -345,8 +368,8 @@ const Upload = ({ onDataFetched }) => {
                   Exam Type <span className="text-red-500 ml-1">*</span>
                 </label>
                 <select
-                  value={examType}
-                  onChange={(e) => setExamType(e.target.value)}
+                  value={schoolInfo.examType}
+                  onChange={(e) => dispatch(setExamType(e.target.value))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 >
@@ -367,8 +390,8 @@ const Upload = ({ onDataFetched }) => {
                 </label>
                 <input
                   type="date"
-                  value={declarationDate}
-                  onChange={(e) => setDeclarationDate(e.target.value)}
+                  value={schoolInfo.declarationDate}
+                  onChange={(e) => dispatch(setDeclarationDate(e.target.value))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -387,8 +410,8 @@ const Upload = ({ onDataFetched }) => {
                   Criteria Type
                 </label>
                 <select
-                  value={passingCriteria}
-                  onChange={(e) => setPassingCriteria(e.target.value)}
+                  value={passingCriteria.criteria}
+                  onChange={(e) => dispatch(setPassingCriteria(e.target.value))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Select Criteria</option>
@@ -402,7 +425,7 @@ const Upload = ({ onDataFetched }) => {
                 </select>
               </div>
 
-              {passingCriteria === "Percentage" && (
+              {passingCriteria.criteria === "Percentage" && (
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-gray-700">
                     Passing Percentage
@@ -412,8 +435,10 @@ const Upload = ({ onDataFetched }) => {
                       type="number"
                       min="0"
                       max="100"
-                      value={passingPercentage}
-                      onChange={(e) => setPassingPercentage(e.target.value)}
+                      value={passingCriteria.percentage}
+                      onChange={(e) =>
+                        dispatch(setPassingPercentage(e.target.value))
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pl-10"
                       placeholder="e.g. 40"
                     />
@@ -424,7 +449,7 @@ const Upload = ({ onDataFetched }) => {
                 </div>
               )}
 
-              {passingCriteria === "No of Papers Failed" && (
+              {passingCriteria.criteria === "No of Papers Failed" && (
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-gray-700">
                     Maximum Allowed Failed Papers
@@ -432,15 +457,15 @@ const Upload = ({ onDataFetched }) => {
                   <input
                     type="number"
                     min="0"
-                    value={failedPapers}
-                    onChange={(e) => setFailedPapers(e.target.value)}
+                    value={passingCriteria.failedPapers}
+                    onChange={(e) => dispatch(setFailedPapers(e.target.value))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="e.g. 2"
                   />
                 </div>
               )}
 
-              {passingCriteria === "No of Papers Passed" && (
+              {passingCriteria.criteria === "No of Papers Passed" && (
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-gray-700">
                     Minimum Required Passed Papers
@@ -448,8 +473,8 @@ const Upload = ({ onDataFetched }) => {
                   <input
                     type="number"
                     min="0"
-                    value={passedPapers}
-                    onChange={(e) => setPassedPapers(e.target.value)}
+                    value={passingCriteria.passedPapers}
+                    onChange={(e) => dispatch(setPassedPapers(e.target.value))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="e.g. 5"
                   />
@@ -471,8 +496,9 @@ const Upload = ({ onDataFetched }) => {
                   Paper
                 </label>
                 <select
-                  value={selectedPaper}
-                  onChange={(e) => setSelectedPaper(e.target.value)}
+                  name="paper"
+                  value={newSubject.paper}
+                  onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Select Paper</option>
@@ -490,27 +516,29 @@ const Upload = ({ onDataFetched }) => {
                   Total Marks
                 </label>
                 <input
+                  name="totalMarks"
                   type="number"
                   min="0"
-                  value={totalMarks}
-                  onChange={(e) => setTotalMarks(e.target.value)}
+                  value={newSubject.totalMarks}
+                  onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Total marks"
                 />
               </div>
 
               {/* Passing Marks (if criteria is based on papers) */}
-              {(passingCriteria === "No of Papers Failed" ||
-                passingCriteria === "No of Papers Passed") && (
+              {(passingCriteria.criteria === "No of Papers Failed" ||
+                passingCriteria.criteria === "No of Papers Passed") && (
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-gray-700">
                     Passing Marks
                   </label>
                   <input
+                    name="passingMarks"
                     type="number"
                     min="0"
-                    value={passingMarks}
-                    onChange={(e) => setPassingMarks(e.target.value)}
+                    value={newSubject.passingMarks}
+                    onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Passing marks"
                   />
@@ -522,7 +550,6 @@ const Upload = ({ onDataFetched }) => {
                 <button
                   type="button"
                   onClick={handleAddSubject}
-                  disabled={!selectedPaper || !totalMarks}
                   className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <FaPlus /> Add
@@ -546,8 +573,9 @@ const Upload = ({ onDataFetched }) => {
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Total Marks
                         </th>
-                        {(passingCriteria === "No of Papers Failed" ||
-                          passingCriteria === "No of Papers Passed") && (
+                        {(passingCriteria.criteria === "No of Papers Failed" ||
+                          passingCriteria.criteria ===
+                            "No of Papers Passed") && (
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Passing Marks
                           </th>
@@ -566,8 +594,10 @@ const Upload = ({ onDataFetched }) => {
                           <td className="px-4 py-2 whitespace-nowrap">
                             {subject.totalMarks}
                           </td>
-                          {(passingCriteria === "No of Papers Failed" ||
-                            passingCriteria === "No of Papers Passed") && (
+                          {(passingCriteria.criteria ===
+                            "No of Papers Failed" ||
+                            passingCriteria.criteria ===
+                              "No of Papers Passed") && (
                             <td className="px-4 py-2 whitespace-nowrap">
                               {subject.passingMarks}
                             </td>
@@ -596,22 +626,22 @@ const Upload = ({ onDataFetched }) => {
               type="submit"
               disabled={
                 isSubmitting ||
-                !logo ||
-                !excel ||
-                !schoolName ||
-                !session ||
-                !classLevel ||
-                !examType ||
+                !schoolInfo.logo ||
+                students.length === 0 ||
+                !schoolInfo.schoolName ||
+                !schoolInfo.session ||
+                !schoolInfo.classLevel ||
+                !schoolInfo.examType ||
                 subjects.length === 0
               }
               className={`w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white py-3 px-4 rounded-md font-medium hover:from-blue-700 hover:to-blue-900 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-md ${
                 isSubmitting ||
-                !logo ||
-                !excel ||
-                !schoolName ||
-                !session ||
-                !classLevel ||
-                !examType ||
+                !schoolInfo.logo ||
+                students.length === 0 ||
+                !schoolInfo.schoolName ||
+                !schoolInfo.session ||
+                !schoolInfo.classLevel ||
+                !schoolInfo.examType ||
                 subjects.length === 0
                   ? "opacity-50 cursor-not-allowed"
                   : ""
