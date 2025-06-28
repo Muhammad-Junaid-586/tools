@@ -1,0 +1,251 @@
+.container {
+  padding: 20px;
+  background-color: #f8f9fa;
+  /* background-color: white; */
+  min-height: 100vh;
+  text-align: center;
+}
+
+h2 {
+  font-size: 2rem;
+  color: #2c3e50;
+}
+
+/* Grid Layout */
+.dmc-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 20px;
+}
+/* .logo {
+  width: 100%;
+  height: 300px;
+  margin: 3px;
+  padding: 4px;
+}
+.logo img {
+  width: 100%;
+  height: 100% !important;
+  object-fit: contain;
+} */
+/* DMC Card Styling */
+.dmc-card {
+  background: #fff;
+  padding: 20px;
+  width: 100%;
+  max-width: 800px;
+  border-radius: 10px;
+
+  /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
+  /* transition: transform 0.3s ease, box-shadow 0.3s ease; */
+}
+
+.dmc-card:hover {
+  transform: translateY(-5px);
+  /* box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); */
+}
+
+h3 {
+  color: #2980b9;
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+p {
+  font-size: 1rem;
+  color: #555;
+  margin: 5px 0;
+}
+
+/* Table Styling */
+.marks-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 7px;
+}
+
+.marks-table th,
+.marks-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.marks-table th {
+  background-color: #3498db;
+  color: white;
+  font-weight: bold;
+}
+
+.marks-table tbody tr:nth-child(even),
+tbody tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+/* Footer Styling */
+.footer {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 3px;
+  padding: 15px;
+  /* background: #ecf0f1; */
+  border-radius: 5px;
+}
+
+/* Print Button Styling */
+.print-btn {
+  margin-top: 15px;
+  background-color: #27ae60;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.print-btn:hover {
+  background-color: #219150;
+}
+
+/* ========================= */
+/* ========================= */
+@media print {
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  body,
+  html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    transform: scale(1); /* Scale down the content to fit */
+    transform-origin: top left; /* Ensure scaling starts from the top-left */
+  }
+  @page {
+    size: A4;
+    margin: 5mm; /* Adjust margins as needed */
+  }
+
+  /* Ensure the body fits within A4 dimensions */
+  body {
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    padding: 0;
+  }
+
+  .container {
+    width: 100%;
+    /* min-height: 100vh; */
+    padding: 0;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+  }
+
+  .dmc-grid {
+    display: block;
+    width: 100%;
+    margin: auto;
+  }
+
+  .dmc-card {
+    width: 100% !important; /* Force full width */
+    max-width: none !important; /* Remove max-width */
+    /* border: 2px solid black; */
+    padding: 10px; /* Reduce padding */
+    margin: 0 auto; /* Ensure centering */
+    page-break-inside: avoid !important; /* Prevent splitting */
+    page-break-before: avoid !important; /* Prevent splitting */
+    page-break-after: avoid !important; /* Prevent splitting */
+  }
+
+  .dmc-card h2 {
+    font-size: 1.8rem !important;
+  }
+
+  .dmc-card h3 {
+    text-align: center;
+    font-size: 1.6rem; /* Reduce font size */
+    margin-bottom: 2px; /* Reduce margin */
+  }
+
+  .marks-table {
+    width: 100%;
+    /* font-size: 0.9rem; Reduce font size */
+  }
+
+  .marks-table th,
+  .marks-table td {
+    padding: 3px; /* Reduce padding */
+  }
+
+  .flex.studentInfo {
+    flex-wrap: nowrap !important; /* Disable wrapping */
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px 20px; /* Adjust spacing */
+    font-size: 0.9rem; /* Reduce font size */
+  }
+
+  .rollNo {
+    font-size: 0.9rem;
+    padding: 2px !important;
+    margin-bottom: 0.4rem;
+  }
+
+  .footer {
+    text-align: center;
+    font-size: 0.9rem; /* Reduce font size */
+    /* padding: 5px 15px; Reduce padding */
+    width: 100%;
+    margin-top: 5px !important;
+    padding-top: 2px !important;
+  }
+  .footer td {
+    padding-block: 3px !important;
+  }
+
+  .grading-wrapper {
+    page-break-inside: avoid !important; /* Prevent splitting */
+    page-break-before: avoid !important; /* Prevent splitting */
+    page-break-after: always !important; /* Prevent splitting */
+  }
+
+  .grading-system-promotion {
+    display: flex !important;
+    flex-direction: row;
+    flex-wrap: nowrap !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 2px !important; /* Reduce padding */
+    padding-block: 0 !important;
+    margin-top: 0px !important; /* Reduce margin */
+    font-size: 0.7rem; /* Reduce font size */
+  }
+  .grading-system {
+    padding-block: 10px !important;
+  }
+  .grading-system ul {
+    margin-block: 2px !important;
+  }
+
+  .grading-system-promotion .grading-system img {
+    width: 120px !important;
+    height: auto !important;
+  }
+
+  /* Hide unnecessary elements */
+  .no-print {
+    display: none !important;
+  }
+}
