@@ -129,7 +129,7 @@ tbody tr:nth-child(even) {
   }
   @page {
     size: A4;
-    margin: 1mm 3mm; /* Adjust margins as needed */
+    margin: 2mm; /* Adjust margins as needed */
   }
 
   /* Ensure the body fits within A4 dimensions */
@@ -162,7 +162,7 @@ tbody tr:nth-child(even) {
     width: 100% !important; /* Force full width */
     max-width: none !important; /* Remove max-width */
     /* border: 2px solid black; */
-    padding: 8px 10px; /* Reduce padding */
+    padding: 8px; /* Reduce padding */
     margin: 0 auto; /* Ensure centering */
     page-break-inside: avoid !important; /* Prevent splitting */
     page-break-before: avoid !important; /* Prevent splitting */
@@ -170,30 +170,39 @@ tbody tr:nth-child(even) {
   }
 
   .dmc-card h2 {
-    font-size: 1.8rem !important;
+    font-size: 1.5rem !important;
   }
 
   .dmc-card h3 {
     text-align: center;
-    font-size: 1.6rem; /* Reduce font size */
+    font-size: 1.3rem; /* Reduce font size */
     margin-bottom: 2px; /* Reduce margin */
   }
+  .school-info:nth-child(1) {
+    height: 200px;
+  }
+  .school-logo {
+    height: 220px;
+  }
 
+  .school-heading-text {
+    margin-left: -30px;
+  }
   .marks-table {
     width: 100%;
-    font-size: 0.8rem; /*Reduce font size*/
+    /* font-size: 0.9rem; Reduce font size */
   }
 
   .marks-table th,
   .marks-table td {
-    padding: 3px; /* Reduce padding */
+    padding: 2px; /* Reduce padding */
   }
 
   .flex.studentInfo {
     flex-wrap: nowrap !important; /* Disable wrapping */
     display: grid !important;
     grid-template-columns: repeat(3, 1fr);
-    gap: 5px 12px; /* Adjust spacing */
+    gap: 3px 20px; /* Adjust spacing */
     font-size: 0.8rem; /* Reduce font size */
   }
 
@@ -233,10 +242,10 @@ tbody tr:nth-child(even) {
     font-size: 0.7rem; /* Reduce font size */
   }
   .grading-system {
-    padding-block: 8px !important;
+    padding-block: 10px !important;
   }
   .grading-system ul {
-    margin-block: 2px !important;
+    margin-block: 1px !important;
   }
 
   .grading-system-promotion .grading-system img {

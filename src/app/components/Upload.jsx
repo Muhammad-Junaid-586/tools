@@ -216,8 +216,13 @@ const Upload = ({ onDataFetched }) => {
       onDataFetched(preparedStudents);
     }
 
+    const selectedDesign = localStorage.getItem("selectedDesign");
     // Navigate to DMC page
-    router.push("/dmc");
+    if (selectedDesign === "NewDmc") {
+      router.push("/dmc");
+    } else {
+      router.push("/singleDmcDesignTwo");
+    }
     setIsSubmitting(false);
   };
 

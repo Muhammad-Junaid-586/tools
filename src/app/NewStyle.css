@@ -38,7 +38,6 @@ h2 {
   width: 100%;
   max-width: 800px;
   border-radius: 10px;
-
   /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
   /* transition: transform 0.3s ease, box-shadow 0.3s ease; */
 }
@@ -118,31 +117,33 @@ tbody tr:nth-child(even) {
     box-shadow: none !important;
     text-shadow: none !important;
   }
+  @page {
+    size: A4 portrait; /* or "A4 landscape" */
+    margin: 1cm; /* Adjust margins as needed */
+  }
 
   body,
   html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    transform: scale(1); /* Scale down the content to fit */
-    transform-origin: top left; /* Ensure scaling starts from the top-left */
-  }
-  @page {
-    size: A4;
-    margin: 1mm 3mm; /* Adjust margins as needed */
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    width: 210mm !important;
+    height: 292mm !important;
+    transform: scale(1) !important; /* Scale down the content to fit */
+    transform-origin: top left !important; /* Ensure scaling starts from the top-left */
   }
 
-  /* Ensure the body fits within A4 dimensions */
-  body {
-    width: 210mm;
-    height: 297mm;
-    margin: 0;
-    padding: 0;
+  @page {
+    size: A4 portrait; /* or "A4 landscape" */
+    margin: 1mm 3mm !important; /* Adjust margins as needed */
   }
 
   .container {
     width: 100%;
     /* min-height: 100vh; */
+    width: 100%;
+    max-width: 100%;
+
     padding: 0;
     margin: auto;
     display: flex;
@@ -162,7 +163,7 @@ tbody tr:nth-child(even) {
     width: 100% !important; /* Force full width */
     max-width: none !important; /* Remove max-width */
     /* border: 2px solid black; */
-    padding: 8px 10px; /* Reduce padding */
+    padding: 10px; /* Reduce padding */
     margin: 0 auto; /* Ensure centering */
     page-break-inside: avoid !important; /* Prevent splitting */
     page-break-before: avoid !important; /* Prevent splitting */
@@ -175,44 +176,22 @@ tbody tr:nth-child(even) {
 
   .dmc-card h3 {
     text-align: center;
-    font-size: 1.6rem; /* Reduce font size */
+    font-size: 1.2rem; /* Reduce font size */
     margin-bottom: 2px; /* Reduce margin */
   }
 
-  .marks-table {
+  .marksTable {
     width: 100%;
-    font-size: 0.8rem; /*Reduce font size*/
+    /* font-size: 0.75rem; Reduce font size */
   }
 
-  .marks-table th,
-  .marks-table td {
-    padding: 3px; /* Reduce padding */
+  .resultDate {
+    font-size: 0.73rem; /* Reduce font size */
   }
 
-  .flex.studentInfo {
-    flex-wrap: nowrap !important; /* Disable wrapping */
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 5px 12px; /* Adjust spacing */
-    font-size: 0.8rem; /* Reduce font size */
-  }
-
-  .rollNo {
-    font-size: 0.8rem;
-    padding: 2px !important;
-    margin-bottom: 0.4rem;
-  }
-
-  .footer {
-    text-align: center;
-    font-size: 0.8rem; /* Reduce font size */
-    /* padding: 5px 15px; Reduce padding */
-    width: 100%;
-    margin-top: 5px !important;
-    padding-top: 2px !important;
-  }
-  .footer td {
-    padding-block: 3px !important;
+  .marksTable th,
+  .marksTable td {
+    padding: 4px; /* Reduce padding */
   }
 
   .grading-wrapper {
@@ -221,27 +200,37 @@ tbody tr:nth-child(even) {
     page-break-after: always !important; /* Prevent splitting */
   }
 
-  .grading-system-promotion {
-    display: flex !important;
-    flex-direction: row;
-    flex-wrap: nowrap !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 2px !important; /* Reduce padding */
-    padding-block: 0 !important;
-    margin-top: 0px !important; /* Reduce margin */
-    font-size: 0.7rem; /* Reduce font size */
+  .studentInfoNewLayout {
+    display: nowrap !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px 10px; /* Adjust spacing */
+    font-size: 0.8rem; /* Reduce font size */
   }
-  .grading-system {
-    padding-block: 8px !important;
-  }
-  .grading-system ul {
-    margin-block: 2px !important;
+  .rollNo {
+    font-size: 0.9rem;
+    padding: 2px !important;
+    margin-bottom: 0.4rem;
   }
 
-  .grading-system-promotion .grading-system img {
-    width: 120px !important;
-    height: auto !important;
+  .print\:text-xs {
+    font-size: 0.78rem !important;
+  }
+  .print\:text-xss {
+    font-size: 0.65rem !important;
+  }
+  .print\:text-sm {
+    font-size: 0.9rem !important;
+  }
+
+  .percentageTable {
+    text-align: center;
+    font-size: 0.9rem; /* Reduce font size */
+
+    width: 100%;
+  }
+  .percentageTable td {
+    padding-block: 1px !important;
   }
 
   /* Hide unnecessary elements */

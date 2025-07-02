@@ -15,7 +15,7 @@ const SingleDesigns = () => {
     {
       id: 2,
       src: "/images/myschool.jpg", // Make sure this image exists in your /public folder
-      navigate: "kb",
+      navigate: "singleDmcDesignTwo",
     },
   ];
 

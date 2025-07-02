@@ -2,92 +2,57 @@
 
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import "../Dmc.css";
+import "../singleDmcDesignTwo.css";
 
-// Subject mapping with all possible variations
-const subjectMapping = {
-  urdu: ["u", "ur", "urdu", "Urdu", "URDU", "اردو"],
-  generalscience: [
-    "gs",
-    "general science",
-    "generalscience",
-    "General Science",
-  ],
-  pakstudy: ["ps", "pak study", "pakstudy", "Pak Study"],
-  english: ["e", "eng", "Eng", "english", "English", "ENG"],
-  islamiat: ["is", "islamiat", "islamic study", "islamicstudy", "Islamiat"],
-  mathematics: [
-    "m",
-    "math",
-    "maths",
-    "Math",
-    "Maths",
-    "mathematics",
-    "Mathematics",
-  ],
-  physics: ["p", "physics", "phy", "Physics"],
-  chemistry: ["c", "chemistry", "chem", "Chemistry"],
-  biology: ["b", "biology", "bio", "Biology"],
-  computerScience: [
-    "cs",
-    "computer science",
-    "comp sci",
-    "comp-science",
-    "Computer Science",
-  ],
-  history: ["h", "history", "hist", "his", "Hist", "History"],
-  geography: ["g", "geography", "geo", "Geo", "Geography"],
-  nazra: [
-    "nqh",
-    "Nazra",
-    "nazria quran hakeem",
-    "nazria-quran",
-    "quran hakeem",
-    "nazria",
-    "Nazria Quran",
-  ],
-  muthaliaQuranHakeem: [
-    "mqh",
-    "muthalia quran hakeem",
-    "muthalia-quran",
-    "muthalia",
-    "Quran Hakeem",
-    "Muthalia Quran",
-  ],
-  arabic: ["a", "arabic", "arb", "Arabic"],
-  pashto: ["p", "pashto", "PSH", "pash", "Pashto"],
-  hpe: [
-    "hpe",
-    "health and physical education",
-    "health & physical edu",
-    "health edu",
-    "physical edu",
-    "Physical Education",
-  ],
-  drawing: ["d", "Dw", "drawing", "art", "sketching", "Drawing"],
-  computerStudies: [
-    "cs",
-    "computer studies",
-    "comp studies",
-    "comp-studies",
-    "Computer Studies",
-  ],
-};
-
-// Helper function to get the standardized subject key
 const getSubjectKey = (subjectName) => {
+  const subjectMapping = {
+    eng: ["english", "eng", "English", "Eng", "englsh"],
+    math: ["mathematics", "math", "mat", "Math", "Maths", "maths"],
+    urdu: ["urdu", "اردو", "ur", "Urdu", "Ur", "urdu"],
+    nazra: ["nazra", "nz", "Nazra", "Nz"],
+    drawing: ["drawing", "draw", "dw", "Drawing", "Draw", "dw"],
+    chemistry: ["chemistry", "chem", "Chemistry", "Chem", "chemistry"],
+    physics: ["physics", "phy", "Physics", "Phy", "physics"],
+    biology: ["biology", "bio", "Biology", "Bio", "biology"],
+    computerScience: [
+      "computer science",
+      "cs",
+      "Computer Science",
+      "Cs",
+      "computer science",
+    ],
+    islamiat: ["islamiat", "is", "Islamiat", "Is", "islamiat"],
+    pakstudy: ["pakstudy", "ps", "Pak Study", "Ps", "pakstudy"],
+    generalscience: [
+      "general science",
+      "gs",
+      "General Science",
+      "Gs",
+      "general science",
+    ],
+    history: ["history", "hist", "History", "Hist", "history"],
+    arabic: ["arabic", "ar", "Arabic", "Ar", "arabic"],
+  };
+
   const lowerSubject = subjectName.toLowerCase().trim();
 
   for (const [key, aliases] of Object.entries(subjectMapping)) {
-    if (
-      key.toLowerCase() === lowerSubject ||
-      aliases.some((alias) => alias.toLowerCase() === lowerSubject)
-    ) {
+    if (key === lowerSubject || aliases.includes(lowerSubject)) {
       return key;
     }
   }
 
-  return subjectName;
+  return lowerSubject;
+};
+
+const getSuffixOnly = (num) => {
+  const n = parseInt(num, 10);
+  if (isNaN(n)) return "";
+  if ([11, 12, 13].includes(n % 100)) return "th";
+  if (n % 10 === 1) return "st";
+  if (n % 10 === 2) return "nd";
+  if (n % 10 === 3) return "rd";
+  return "th";
 };
 
 const DMCPage = () => {
@@ -99,7 +64,6 @@ const DMCPage = () => {
   const [statuses, setStatuses] = useState({});
   const [performances, setPerformances] = useState({});
   const [totalObtainedMarks, setTotalObtainedMarks] = useState({});
-  const [subjectMarks, setSubjectMarks] = useState({});
 
   useEffect(() => {
     if (!students || students.length === 0) return;
@@ -107,10 +71,9 @@ const DMCPage = () => {
     const results = [];
     const percentageValues = [];
     const obtainedMarks = {};
-    const marksBySubject = {};
 
     students.forEach((student, studentIndex) => {
-      // Normalize student marks data
+      // Create normalized student object with standardized keys
       const normalizedStudent = {};
       Object.keys(student).forEach((key) => {
         if (key.toLowerCase() !== "subjects") {
@@ -123,59 +86,40 @@ const DMCPage = () => {
       let passedSubjects = 0;
       let failedSubjects = 0;
 
-      // Store marks for each subject
-      marksBySubject[studentIndex] = {};
-
       student.Subjects.forEach((subject) => {
         const subjectKey = getSubjectKey(subject.paper);
-        const totalMarks = parseFloat(subject.totalMarks) || 0;
-        let obtained = normalizedStudent[subjectKey];
-
-        // Check if student is absent (mark is "A" or "a")
-        const isAbsent = obtained?.toString().toLowerCase() === "a";
-        const obtainedValue = isAbsent ? "A" : parseFloat(obtained) || 0;
-
+        const subjectMarks = parseFloat(subject.totalMarks) || 0;
+        const obtained = parseFloat(normalizedStudent[subjectKey]) || 0;
         const passingMarks = parseFloat(subject.passingMarks) || 0;
 
-        totalPossible += totalMarks;
-        // Don't add to total obtained if absent
-        totalObtained += isAbsent ? 0 : obtainedValue;
+        totalPossible += subjectMarks;
+        totalObtained += obtained;
 
-        marksBySubject[studentIndex][subjectKey] = obtainedValue;
-
-        if (!isAbsent && obtainedValue >= passingMarks) {
-          passedSubjects++;
-        } else if (!isAbsent) {
-          failedSubjects++;
-        }
+        if (obtained >= passingMarks) passedSubjects++;
+        else failedSubjects++;
       });
 
       obtainedMarks[studentIndex] = totalObtained;
       const percentage =
         totalPossible > 0 ? (totalObtained / totalPossible) * 100 : 0;
 
-      // Determine status based on passing criteria
       let status = "Fail";
-      const passingCriteria = student["Passing Criteria"] || "Percentage";
-
       if (
-        passingCriteria === "Percentage" &&
-        percentage >= parseFloat(student["Passing Percentage"] || 0)
-      ) {
+        student["Passing Criteria"] === "Percentage" &&
+        percentage >= parseFloat(student["Passing Percentage"])
+      )
         status = "Pass";
-      } else if (
-        passingCriteria === "No of Papers Failed" &&
-        failedSubjects <= parseFloat(student["Failed Papers"] || 0)
-      ) {
+      if (
+        student["Passing Criteria"] === "No of Papers Failed" &&
+        failedSubjects <= parseFloat(student["Failed Papers"])
+      )
         status = "Pass";
-      } else if (
-        passingCriteria === "No of Papers Passed" &&
-        passedSubjects >= parseFloat(student["Passed Papers"] || 0)
-      ) {
+      if (
+        student["Passing Criteria"] === "No of Papers Passed" &&
+        passedSubjects >= parseFloat(student["Passed Papers"])
+      )
         status = "Pass";
-      }
 
-      // Determine grade
       let grade = "F";
       if (status === "Pass") {
         if (percentage >= 90) grade = "A+";
@@ -185,7 +129,6 @@ const DMCPage = () => {
         else if (percentage >= 33) grade = "D";
       }
 
-      // Determine performance
       const performance = {
         "A+": "Excellent",
         A: "Outstanding",
@@ -206,7 +149,6 @@ const DMCPage = () => {
       percentageValues.push({ index: studentIndex, percentage });
     });
 
-    // Calculate positions
     const sorted = [...percentageValues].sort(
       (a, b) => b.percentage - a.percentage
     );
@@ -215,7 +157,6 @@ const DMCPage = () => {
       positions[item.index] = pos + 1;
     });
 
-    // Update all states
     const newGrades = {};
     const newStatuses = {};
     const newPerformances = {};
@@ -231,43 +172,20 @@ const DMCPage = () => {
     setPerformances(newPerformances);
     setStudentPositions(positions);
     setTotalObtainedMarks(obtainedMarks);
-    setSubjectMarks(marksBySubject);
   }, [students]);
 
-  // Helper functions for ordinal numbers
-  const getOrdinalSuffix = (num) => {
-    if (!num) return "N/A";
+  const getOrdinal = (num) => {
     const n = parseInt(num, 10);
-    const lastDigit = n % 10;
-    const lastTwoDigits = n % 100;
-    if (lastTwoDigits >= 11 && lastTwoDigits <= 13) return `${n}th`;
-    if (lastDigit === 1) return `${n}st`;
-    if (lastDigit === 2) return `${n}nd`;
-    if (lastDigit === 3) return `${n}rd`;
+    if (isNaN(n)) return "";
+    if ([11, 12, 13].includes(n % 100)) return `${n}th`;
+    if (n % 10 === 1) return `${n}st`;
+    if (n % 10 === 2) return `${n}nd`;
+    if (n % 10 === 3) return `${n}rd`;
     return `${n}th`;
   };
 
-  const getSuffixOnly = (num) => {
-    const n = parseInt(num, 10);
-    const lastDigit = n % 10;
-    const lastTwoDigits = n % 100;
-    if (lastTwoDigits >= 11 && lastTwoDigits <= 13) return "th";
-    if (lastDigit === 1) return "st";
-    if (lastDigit === 2) return "nd";
-    if (lastDigit === 3) return "rd";
-    return "th";
-  };
-
-  if (!students.length) {
-    return (
-      <div className="p-4">
-        <h1 className="text-2xl font-bold mb-4">Detailed Mark Certificates</h1>
-        <p className="text-red-500">
-          No student data found. Please upload files first.
-        </p>
-      </div>
-    );
-  }
+  if (!students.length)
+    return <p>No student data found. Please upload files first.</p>;
 
   return (
     <div className="container">
@@ -275,38 +193,53 @@ const DMCPage = () => {
 
       <div className="dmc-grid">
         {students.map((student, index) => {
+          // Create normalized student object for display
+          const normalizedStudent = {};
+          Object.keys(student).forEach((key) => {
+            if (key.toLowerCase() !== "subjects") {
+              normalizedStudent[getSubjectKey(key)] = student[key];
+            }
+          });
+
           const totalPossible = student.Subjects.reduce(
-            (acc, subject) => acc + (parseFloat(subject.totalMarks) || 0),
+            (acc, s) => acc + (parseFloat(s.totalMarks) || 0),
             0
           );
 
+          const totalObtained = student.Subjects.reduce((acc, s) => {
+            const key = getSubjectKey(s.paper);
+            return acc + (parseFloat(normalizedStudent[key]) || 0);
+          }, 0);
+
           return (
             <div key={index} className="dmc-card">
-              {/* Decorative elements */}
+              {/* Decorative shapes */}
               <div className="decorative-shape top-left"></div>
               <div className="decorative-shape top-right"></div>
               <div className="decorative-shape bottom-left"></div>
               <div className="decorative-shape bottom-right"></div>
 
               {/* School header */}
-              <h2
-                style={{ fontFamily: "Merriweather, serif" }}
-                className="relative z-40"
-              >
-                <strong>{student["School Name"]}</strong>
-              </h2>
-
-              <div className="flex justify-center items-center w-full h-[180px] object-cover my-1 p-0 mt-[-40px] mb-[-40px] relative">
-                <img
-                  src={student.Logo}
-                  alt="School Logo"
-                  className="w-auto h-full m-0 p-0 z-20 object-cover"
-                />
+              <div className="flex items-center justify-center gap-1 w-full mb-[-30px]">
+                <div className="w-[240px] h-[240px]">
+                  <img
+                    src={student.Logo}
+                    alt="School Logo"
+                    className="w-[240px] h-full object-cover"
+                  />
+                </div>
+                <div className="ml-[-30px] school-heading-text">
+                  <h2
+                    style={{ fontFamily: "Merriweather, serif" }}
+                    className="relative z-40"
+                  >
+                    <strong>{student["School Name"]}</strong>
+                  </h2>
+                  <h3 className="relative z-40">
+                    <strong>Detailed Marks Certificate</strong>
+                  </h3>
+                </div>
               </div>
-
-              <h3 className="relative z-40">
-                <strong>Detailed Marks Certificate</strong>
-              </h3>
 
               {/* Student info */}
               <div className="flex flex-col items-center">
@@ -315,7 +248,7 @@ const DMCPage = () => {
                     <strong>Roll Number:</strong> {student["R.No"] || "N/A"}
                   </div>
                   <div className="border p-1 rounded-lg w-full max-w-[300px] px-2 relative z-40">
-                    <strong>Exam Type: </strong> {student["Exam Type"] || "N/A"}
+                    <strong>E.Type: </strong> {student["Exam Type"] || "N/A"}
                   </div>
                   <div className="border p-1 rounded-lg w-full max-w-[300px] px-2">
                     <strong>Name: </strong> {student["Student Name"] || "N/A"}
@@ -335,9 +268,9 @@ const DMCPage = () => {
 
               {/* Marks table */}
               <div className="overflow-x-auto p-4">
-                <table className="w-full border text-center">
-                  <thead>
-                    <tr className="bg-gray-200">
+                <table className="w-full border border-gray-300 rounded-lg shadow-md overflow-hidden">
+                  <thead className="bg-gray-800 text-white rounded-lg text-sm uppercase">
+                    <tr className="bg-gray-800">
                       <th className="border px-4 py-1">S.No</th>
                       <th className="border px-4 py-1">Subjects</th>
                       <th className="border px-4 py-1">Total Marks</th>
@@ -349,23 +282,18 @@ const DMCPage = () => {
                       fontSize: student.Subjects.length >= 8 ? ".7rem" : "1rem",
                     }}
                   >
-                    {student.Subjects.map((subject, i) => {
-                      const subjectKey = getSubjectKey(subject.paper);
-                      const obtained = subjectMarks[index]?.[subjectKey] || 0;
-
-                      return (
-                        <tr key={i} className="hover:bg-gray-100">
-                          <td className="border px-4 py-1">{i + 1}</td>
-                          <td className="border px-4 py-1">{subject.paper}</td>
-                          <td className="border px-4 py-1">
-                            {subject.totalMarks}
-                          </td>
-                          <td className="border px-4 py-1">
-                            {obtained === "A" ? "A" : obtained}
-                          </td>
-                        </tr>
-                      );
-                    })}
+                    {student.Subjects.map((subject, i) => (
+                      <tr key={i} className="hover:bg-gray-100">
+                        <td className="border px-4 py-1">{i + 1}</td>
+                        <td className="border px-4 py-1">{subject.paper}</td>
+                        <td className="border px-4 py-1">
+                          {subject.totalMarks}
+                        </td>
+                        <td className="border px-4 py-1">
+                          {normalizedStudent[getSubjectKey(subject.paper)] || 0}
+                        </td>
+                      </tr>
+                    ))}
                     <tr className="hover:bg-gray-100">
                       <td
                         colSpan={2}
@@ -374,9 +302,7 @@ const DMCPage = () => {
                         Total Marks
                       </td>
                       <td className="border px-4 py-1">{totalPossible}</td>
-                      <td className="border px-4 py-1">
-                        {totalObtainedMarks[index] || 0}
-                      </td>
+                      <td className="border px-4 py-1">{totalObtained}</td>
                     </tr>
                     <tr className="hover:bg-gray-100">
                       <td
@@ -393,19 +319,18 @@ const DMCPage = () => {
                 </table>
               </div>
 
-              {/* Results summary */}
+              {/* Results footer */}
               <div className="footer mt-4 pt-1">
-                <table className="w-full border text-center">
-                  <tbody>
+                <table className="w-full border-collapse rounded-lg overflow-hidden text-center">
+                  <tbody className="border-collapse overflow-hidden rounded-lg">
                     <tr className="bg-gray-200">
                       <td className="border px-4 py-1 font-semibold text-center">
                         Percentage
                       </td>
                       <td className="p-2 border">
-                        {(
-                          (totalObtainedMarks[index] / (totalPossible || 1)) *
-                          100
-                        ).toFixed(2)}
+                        {((totalObtained / (totalPossible || 1)) * 100).toFixed(
+                          2
+                        )}
                         %
                       </td>
                       <td className="p-2 border font-semibold">Grade</td>
@@ -414,7 +339,7 @@ const DMCPage = () => {
                     <tr>
                       <td className="p-2 border font-semibold">Position</td>
                       <td className="p-2 border">
-                        {getOrdinalSuffix(studentPositions[index])}
+                        {getOrdinal(studentPositions[index])}
                       </td>
                       <td className="p-2 border font-semibold">Performance</td>
                       <td className="p-2 border">
@@ -432,12 +357,12 @@ const DMCPage = () => {
                 </span>
               </div>
 
-              {/* Grading system and promotion message */}
+              {/* Grading and promotion section */}
               <div className="grading-wrapper">
                 <div className="grading-system-promotion mt-2 flex flex-nowrap justify-between items-center px-2 py-1 rounded-xl bg-white transition-all duration-300 ease-in-out overflow-hidden">
                   <div className="grading-system flex items-center p-6 rounded-2xl w-[40%] min-w-0">
                     <img
-                      src="images/grade bee.PNG"
+                      src="images/congrats1.jpg"
                       alt="Grading System"
                       className="w-40 h-auto object-contain rounded-xl transition-transform duration-300 hover:scale-105"
                     />
@@ -469,36 +394,11 @@ const DMCPage = () => {
                   </div>
 
                   <div className="promotion-message text-center relative w-[40%] h-52 min-w-0">
-                    <img
-                      src="images/comments.PNG"
-                      alt="Comments"
-                      className="w-full h-full object-contain rounded-2xl"
-                    />
                     <div className="absolute inset-0 flex items-center justify-center text-xl font-bold z-10 px-6 pb-2 text-center rounded-2xl">
                       {statuses[index] !== "Fail" ? (
-                        <p style={{ fontFamily: "Merriweather, serif" }}>
-                          🎉 Congratulations! You have been promoted to Class{" "}
-                          <span className="inline-flex items-baseline font-extrabold">
-                            {student["Class Level"]?.toLowerCase() === "kg"
-                              ? 1
-                              : parseInt(student["Class Level"], 10) + 1}
-                            <sup className="text-sm">
-                              {student["Class Level"]?.toLowerCase() === "kg"
-                                ? getSuffixOnly(1)
-                                : getSuffixOnly(
-                                    parseInt(student["Class Level"], 10) + 1
-                                  )}
-                            </sup>
-                          </span>
-                        </p>
+                        <img src="images/congrats8.png" alt="" />
                       ) : (
-                        <p
-                          style={{ fontFamily: "Merriweather, serif" }}
-                          className="text-red-300"
-                        >
-                          Unfortunately! You have not met the required standards
-                          to pass the exam.
-                        </p>
+                        <img src="images/try1-removebg-preview.png" alt="" />
                       )}
                     </div>
                   </div>
