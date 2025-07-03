@@ -220,8 +220,12 @@ const Upload = ({ onDataFetched }) => {
     // Navigate to DMC page
     if (selectedDesign === "NewDmc") {
       router.push("/dmc");
-    } else {
+    } else if (selectedDesign === "singleDmcDesignTwo") {
       router.push("/singleDmcDesignTwo");
+    } else if (selectedDesign === "twoInOneFirst") {
+      router.push("/twoInOneFirst");
+    } else if (selectedDesign === "twoInOneSecond") {
+      router.push("/twoInOneSecond");
     }
     setIsSubmitting(false);
   };
@@ -445,7 +449,7 @@ const Upload = ({ onDataFetched }) => {
                         dispatch(setPassingPercentage(e.target.value))
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pl-10"
-                      placeholder="e.g. 40"
+                      placeholder="e.g. 33"
                     />
                     <span className="absolute left-3 top-2 text-gray-400">
                       %

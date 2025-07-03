@@ -11,7 +11,7 @@ const DmcIntro = () => {
     if (designType === "single") {
       router.push("/singlePageDmc");
     } else if (designType === "two") {
-      router.push("/twodesign");
+      router.push("/twoDmcPage");
     }
   };
 
