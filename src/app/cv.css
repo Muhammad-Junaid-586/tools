@@ -1,0 +1,6 @@
+@media print {
+  .decMT-cv-print {
+    margin-top: -60px !important;
+    margin-bottom: 10px !important;
+  }
+}

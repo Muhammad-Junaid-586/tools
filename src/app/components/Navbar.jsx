@@ -9,6 +9,7 @@ const Navbar = () => {
 
   const navLinks = [
     { title: "DMC Generator", path: "/dmcIntro" },
+    { title: "CV Generator", path: "/resume/cv" },
     { title: "Papers Making", path: "/papers" },
     { title: "Roll No Slip", path: "/rollno-slip" },
     { title: "Student Cards", path: "/student-cards" },
